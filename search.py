@@ -113,19 +113,125 @@ def depthFirstSearch(problem):
     print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
     """
     "*** YOUR CODE HERE ***"
+    stack = util.Stack()
+    actions = []
+    visited = set()
+
+    stack.push(problem.getStartState())
+    visited.add(problem.getStartState())
+
+    while not stack.isEmpty():
+        # to get the top of stack, but stack doesn't have method top()
+        top = stack.pop()
+        if problem.isGoalState(top):
+            return actions
+
+        children = [child for child in problem.expand(top) if child[0] not in visited]
+        if len(children) == 0:
+            actions.pop()
+            continue
+            
+        stack.push(top)
+        (s, a, _) = children[0]
+        stack.push(s)
+        visited.add(s)
+        actions.append(a)
+    
     util.raiseNotDefined()
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    queue = util.Queue()
+    visited = set()
+
+    queue.push(((problem.getStartState(), None, None), None)) # ((state, action, cost), parent)
+    visited.add(problem.getStartState())
+
+    while not queue.isEmpty():
+        top = queue.pop()
+        top_state = top[0][0]
+        if problem.isGoalState(top_state):
+            actions = []
+            last_action = top[0][1]
+            parent = top[1]
+            while last_action:
+                actions.append(last_action)
+                last_action = parent[0][1]
+                parent = parent[1]
+            actions.reverse()
+            return actions
+
+        for (s, a, c) in problem.expand(top_state):
+            if s in visited: continue
+            queue.push(((s, a, c), top))
+            visited.add(s)
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     """Search the node of least cost from the root."""
     "*** YOUR CODE HERE ***"
+    queue = util.PriorityQueue()
+    startState = problem.getStartState()
+    visited, openSet = set(), set()
+
+    queue.push(((startState, None, 0), None, 0), 0)
+    openSet.add(startState)
+    while not queue.isEmpty():
+        curr = queue.pop()
+        ((currState, _, costToCurr), _, currTotalCost) = curr
+        openSet.remove(currState)
+        visited.add(currState)
+
+        if problem.isGoalState(currState):
+            actions = []
+            ((_, actionToCurr, _), parent, _) = curr
+            while actionToCurr:
+                actions.append(actionToCurr)
+                ((_, actionToCurr, _), parent, _) = parent
+            actions.reverse()
+            return actions
+
+        expands = problem.expand(currState)
+        unvisitedExpands = [expand for expand in expands if expand[0] not in visited and expand[0] not in openSet]
+
+        for expand in unvisitedExpands:
+            openSet.add(expand[0])
+            queue.push((expand, curr, currTotalCost + costToCurr),
+                       currTotalCost)
     util.raiseNotDefined()
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
+    queue = util.PriorityQueue()
+    startState = problem.getStartState()
+    visited, openSet = set(), set()
+
+    queue.push(((startState, None, 0), None, 0), 0)
+    openSet.add(startState)
+    while not queue.isEmpty():
+        curr = queue.pop()
+        ((currState, _, costToCurr), _, currTotalCost) = curr
+        openSet.remove(currState)
+        visited.add(currState)
+
+        if problem.isGoalState(currState):
+            actions = []
+            ((_, actionToCurr, _), parent, _) = curr
+            while actionToCurr:
+                actions.append(actionToCurr)
+                ((_, actionToCurr, _), parent, _) = parent
+            actions.reverse()
+            return actions
+
+        expands = problem.expand(currState)
+        unvisitedExpands = [expand for expand in expands if expand[0] not in visited and expand[0] not in openSet]
+
+        for expand in unvisitedExpands:
+            openSet.add(expand[0])
+            queue.push((expand, curr, currTotalCost + costToCurr),
+                       currTotalCost +
+                       heuristic(expand[0], problem))
     util.raiseNotDefined()
