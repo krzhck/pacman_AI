@@ -87,9 +87,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
             if agent_index==0: #max
                 vmax = -float('inf')
                 for action in gameState.getLegalActions(agent_index):
-                    v = miniMax(self, gameState.generateChild(agent_index,action), level, agent_index+1)
-                    if v > vmax:
-                        vmax = v
+                    v = miniMax(self, gameState.generateChild(agent_index,action), level, agent_index + 1)
+                    v = max(v, vmax)
                 return v
             else: #min
                 vmin = float('inf')
@@ -97,8 +96,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     level += 1
                 for action in gameState.getLegalActions(agent_index):
                     v = miniMax(self, gameState.generateChild(agent_index,action), level, (agent_index + 1) % agent_num)
-                    if v < vmin:
-                        vmin = v
+                    v = min(v, vmin)
                 return v
        
         pacman_actions = gameState.getLegalPacmanActions()
@@ -125,4 +123,40 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def miniMax(self, gameState, level=1, agent_index=0, alpha = -float('inf'), beta = float('inf')):
+            if level > self.depth or gameState.isWin() or gameState.isLose():
+                return self.evaluationFunction(gameState)
+
+            agent_num = gameState.getNumAgents()
+            if agent_index==0: #max
+                vmax = -float('inf')
+                for action in gameState.getLegalActions(agent_index):
+                    if alpha > beta: break
+                    v = miniMax(self, gameState.generateChild(agent_index,action), level, agent_index + 1, alpha, beta)
+                    v = max(v, vmax)
+                    alpha = max(alpha, v)
+                return v
+            else: #min
+                vmin = float('inf')
+                if agent_index == agent_num - 1:
+                    level += 1
+                for action in gameState.getLegalActions(agent_index):
+                    if alpha > beta: break
+                    v = miniMax(self, gameState.generateChild(agent_index,action), level, (agent_index + 1) % agent_num, alpha, beta)
+                    v = min(v, vmin)
+                    beta = min(beta, v)
+                return v
+       
+        pacman_actions = gameState.getLegalPacmanActions()
+        valid_actions = []
+        vmax = -float('inf')
+        for action in pacman_actions:
+            next_state=gameState.generatePacmanChild(action)
+            v = miniMax(self, next_state, 1, 1)
+            if v > vmax:
+                vmax = v
+                valid_actions = [action]
+            elif v == vmax:
+                valid_actions.append(action)
+                continue
+        return valid_actions[random.randint(0,len(valid_actions)-1)]
