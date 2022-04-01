@@ -121,7 +121,6 @@ def depthFirstSearch(problem):
     visited.add(problem.getStartState())
 
     while not stack.isEmpty():
-        # to get the top of stack, but stack doesn't have method top()
         top = stack.pop()
         if problem.isGoalState(top):
             return actions
@@ -146,27 +145,26 @@ def breadthFirstSearch(problem):
     queue = util.Queue()
     visited = set()
 
-    queue.push(((problem.getStartState(), None, None), None)) # ((state, action, cost), parent)
+    queue.push((problem.getStartState(), None, None, None)) # (state, action, cost, parent)
     visited.add(problem.getStartState())
 
     while not queue.isEmpty():
         top = queue.pop()
-        top_state = top[0][0]
+        (top_state, action, cost, parent) = top
         if problem.isGoalState(top_state):
             actions = []
-            last_action = top[0][1]
-            parent = top[1]
-            while last_action:
-                actions.append(last_action)
-                last_action = parent[0][1]
-                parent = parent[1]
+            while action:
+                actions.append(action)
+                action = parent[1]
+                parent = parent[3]
             actions.reverse()
             return actions
 
         for (s, a, c) in problem.expand(top_state):
             if s in visited: continue
-            queue.push(((s, a, c), top))
+            queue.push((s, a, c, top))
             visited.add(s)
+
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
@@ -174,32 +172,28 @@ def uniformCostSearch(problem):
     "*** YOUR CODE HERE ***"
     queue = util.PriorityQueue()
     startState = problem.getStartState()
-    visited, openSet = set(), set()
+    visited = set()
 
-    queue.push(((startState, None, 0), None, 0), 0)
-    openSet.add(startState)
+    queue.push((startState, None, 0, None, 0), 0) # (state, action, cost, parent, totalcost)
+    visited.add(startState)
+
     while not queue.isEmpty():
-        curr = queue.pop()
-        ((currState, _, costToCurr), _, currTotalCost) = curr
-        openSet.remove(currState)
-        visited.add(currState)
-
-        if problem.isGoalState(currState):
+        top = queue.pop()
+        (top_state, action, cost, parent, total_cost) = top
+        if problem.isGoalState(top_state):
             actions = []
-            ((_, actionToCurr, _), parent, _) = curr
-            while actionToCurr:
-                actions.append(actionToCurr)
-                ((_, actionToCurr, _), parent, _) = parent
+            while action:
+                actions.append(action)
+                (_, action, _, parent, _) = parent
             actions.reverse()
             return actions
 
-        expands = problem.expand(currState)
-        unvisitedExpands = [expand for expand in expands if expand[0] not in visited and expand[0] not in openSet]
+        for (s, a, c) in problem.expand(top_state):
+            if s in visited: continue
+            new_total_cost = total_cost + c
+            queue.push((s, a, c, top, new_total_cost), new_total_cost)
+            visited.add(s)
 
-        for expand in unvisitedExpands:
-            openSet.add(expand[0])
-            queue.push((expand, curr, currTotalCost + costToCurr),
-                       currTotalCost)
     util.raiseNotDefined()
 
 def aStarSearch(problem, heuristic=nullHeuristic):
@@ -207,31 +201,27 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     "*** YOUR CODE HERE ***"
     queue = util.PriorityQueue()
     startState = problem.getStartState()
-    visited, openSet = set(), set()
+    visited = set()
 
-    queue.push(((startState, None, 0), None, 0), 0)
-    openSet.add(startState)
+    queue.push((startState, None, 0, None, 0), 0) # (state, action, cost, parent, totalcost)
+    visited.add(startState)
+
     while not queue.isEmpty():
-        curr = queue.pop()
-        ((currState, _, costToCurr), _, currTotalCost) = curr
-        openSet.remove(currState)
-        visited.add(currState)
-
-        if problem.isGoalState(currState):
+        top = queue.pop()
+        (top_state, action, cost, parent, total_cost) = top
+        if problem.isGoalState(top_state):
             actions = []
-            ((_, actionToCurr, _), parent, _) = curr
-            while actionToCurr:
-                actions.append(actionToCurr)
-                ((_, actionToCurr, _), parent, _) = parent
+            while action:
+                actions.append(action)
+                (_, action, _, parent, _) = parent
             actions.reverse()
             return actions
 
-        expands = problem.expand(currState)
-        unvisitedExpands = [expand for expand in expands if expand[0] not in visited and expand[0] not in openSet]
+        for (s, a, c) in problem.expand(top_state):
+            if s in visited: continue
+            new_total_cost = total_cost + c
+            f = new_total_cost + heuristic(s, problem)
+            queue.push((s, a, c, top, new_total_cost), f)
+            visited.add(s)
 
-        for expand in unvisitedExpands:
-            openSet.add(expand[0])
-            queue.push((expand, curr, currTotalCost + costToCurr),
-                       currTotalCost +
-                       heuristic(expand[0], problem))
     util.raiseNotDefined()
