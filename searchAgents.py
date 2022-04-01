@@ -269,9 +269,18 @@ class yourSearchAgent(SearchAgent):
     """
     def __init__(self):
         "*** YOUR CODE HERE ***"
+        util.raiseNotDefined()
+
+class mediumScaryAgent(SearchAgent):
+    def __init__(self):
+        "*** YOUR CODE HERE ***"
         self.searchFunction = lambda prob: search.aStarSearch(prob, yourHeuristic)
         costFn = lambda pos: 2 ** pos[0] + .5 ** pos[1]
         self.searchType = lambda state: PositionSearchProblem(state, costFn, (1, 1), None, False)
 
-def manhattanDistance(p1, p2):
-    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
+class foodSearchAgent(SearchAgent):
+    def __init__(self):
+        "*** YOUR CODE HERE ***"
+        self.searchFunction = lambda prob: search.aStarSearch(prob, yourHeuristic)
+        costFn = lambda pos: 2 ** pos[0] + .5 ** pos[1]
+        self.searchType = lambda state: PositionSearchProblem(state, costFn, (1, 1), None, False)
