@@ -237,7 +237,8 @@ def euclideanHeuristic(position, problem, info={}):
     "The Euclidean distance heuristic for a PositionSearchProblem"
     xy1 = position
     xy2 = problem.goal
-    return ( (xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2 ) ** 0.5
+    return 0 
+    #( (xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2 ) ** 0.5
 
 class StayEastSearchAgent(SearchAgent):
     """
@@ -255,86 +256,12 @@ class StayEastSearchAgent(SearchAgent):
 # This portion is incomplete.  Time to write code!  #
 #####################################################
 
-class FoodSearchProblem:
-    """
-    A search problem associated with finding the a path that collects all of the
-    food (dots) in a Pacman game.
-
-    A search state in this problem is a tuple ( pacmanPosition, foodGrid ) where
-      pacmanPosition: a tuple (x,y) of integers specifying Pacman's position
-      foodGrid:       a Grid (see game.py) of either True or False, specifying remaining food
-    """
-    def __init__(self, startingGameState):
-        self.start = (startingGameState.getPacmanPosition(), startingGameState.getFood())
-        self.walls = startingGameState.getWalls()
-        self.startingGameState = startingGameState
-        self._expanded = 0 # DO NOT CHANGE
-        self.heuristicInfo = {} # A dictionary for the heuristic to store information
-
-    def getStartState(self):
-        return self.start
-
-    def isGoalState(self, state):
-        return state[1].count() == 0
-
-    def expand(self, state):
-        "Returns child states, the actions they require, and a cost of 1."
-        children = []
-        self._expanded += 1 # DO NOT CHANGE
-        for action in self.getActions(state):
-            next_state = self.getNextState(state, action)
-            action_cost = self.getActionCost(state, action, next_state)
-            children.append( ( next_state, action, action_cost) )
-        return children
-
-    def getActions(self, state):
-        possible_directions = [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]
-        valid_actions_from_state = []
-        for action in possible_directions:
-            x, y = state[0]
-            dx, dy = Actions.directionToVector(action)
-            nextx, nexty = int(x + dx), int(y + dy)
-            if not self.walls[nextx][nexty]:
-                valid_actions_from_state.append(action)
-        return valid_actions_from_state
-
-    def getActionCost(self, state, action, next_state):
-        assert next_state == self.getNextState(state, action), (
-            "Invalid next state passed to getActionCost().")
-        return 1
-
-    def getNextState(self, state, action):
-        assert action in self.getActions(state), (
-            "Invalid action passed to getActionCost().")
-        x, y = state[0]
-        dx, dy = Actions.directionToVector(action)
-        nextx, nexty = int(x + dx), int(y + dy)
-        nextFood = state[1].copy()
-        nextFood[nextx][nexty] = False
-        return ((nextx, nexty), nextFood)
-
-    def getCostOfActionSequence(self, actions):
-        """Returns the cost of a particular sequence of actions.  If those actions
-        include an illegal move, return 999999"""
-        x,y= self.getStartState()[0]
-        cost = 0
-        for action in actions:
-            # figure out the next state and see whether it's legal
-            dx, dy = Actions.directionToVector(action)
-            x, y = int(x + dx), int(y + dy)
-            if self.walls[x][y]:
-                return 999999
-            cost += 1
-        return cost
-
 def yourHeuristic(position, problem, info={}):
     "The heuristic distance for a PositionSearchProblem"
     "*** YOUR CODE HERE ***"
-    return 0
     xy1 = position
     xy2 = problem.goal
     return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
-    util.raiseNotDefined()
 
 class yourSearchAgent(SearchAgent):
     """
@@ -343,4 +270,8 @@ class yourSearchAgent(SearchAgent):
     def __init__(self):
         "*** YOUR CODE HERE ***"
         self.searchFunction = lambda prob: search.aStarSearch(prob, yourHeuristic)
-        self.searchType = PositionSearchProblem
+        costFn = lambda pos: 2 ** pos[0] + .5 ** pos[1]
+        self.searchType = lambda state: PositionSearchProblem(state, costFn, (1, 1), None, False)
+
+def manhattanDistance(p1, p2):
+    return abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])
