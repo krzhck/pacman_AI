@@ -281,6 +281,13 @@ class mediumScaryAgent(SearchAgent):
 class foodSearchAgent(SearchAgent):
     def __init__(self):
         "*** YOUR CODE HERE ***"
-        self.searchFunction = lambda prob: search.aStarSearch(prob, yourHeuristic)
-        costFn = lambda pos: 2 ** pos[0] + .5 ** pos[1]
+        self.searchFunction = lambda prob: search.uniformCostSearch(prob)
+        #self.searchFunction = lambda prob: search.aStarSearch(prob, yourHeuristic)
+        #costFn = lambda pos: 100 if pos[1] == 2 and pos[0] < 10 else (1)
+        def costFn(pos):
+            (x, y) = pos
+            block = 1e9
+            if (x in [5, 9, 14, 15] and y > 1) or (x in [2, 3, 7, 11, 12, 17, 18] and y < 5):
+                return float('inf')
+            return 1
         self.searchType = lambda state: PositionSearchProblem(state, costFn, (1, 1), None, False)
