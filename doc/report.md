@@ -39,7 +39,9 @@
 
 所有算法耗时大致与展开节点数成线性关系，而在 bigMaze 的测试结果中 A* 展开节点数显著较少的情况下耗时仍与BFS几乎相同，其原因应该是计算启发函数导致的额外耗时。
 
-A* 启发函数定义为 pacman 到 goal 的曼哈顿距离。
+A* 启发函数定义为 pacman 到 goal 的曼哈顿距离，是良定义的：由于吃豆人的移动模式是上下左右，而且考虑到避开墙壁，所以曼哈顿距离一定不大于实际移动代价，因此满足 admissibility；在状态 n 下，吃豆人做任何移动的代价是 1，因此证明 h(s) $\leq$ 1 + h(s') 即可，吃动人做出一个动作可能：(1) 不移动，满足 h(s) $\leq$ 1 + h(s') ，(2) 离食物更近，这时 h(s) = 1 + h(s')，(3) 离食物更远，也满足。因此满足 consistency。
+
+
 
 ## 问题二
 
@@ -56,8 +58,25 @@ python pacman.py -l foodSearchMaze -p foodSearchAgent
 
 pacman 的任务是避开怪物吃到 (1, 1) 的食物，观察到怪物初始位置都在地图右上方，因此代价函数的设计思路就是让 pacman尽可能从左侧找路而不是走右边（否则很可能碰到怪物）。代价函数设计为 $f=2^{x}+2^{-y}$，即地图下方比上方代价高，右侧比左侧代价高，这样 pacman 会沿着左上方寻路而避开怪物。
 
-<img src="/Users/krzhck/Desktop/Xnip2022-04-02_22-39-21.jpg" alt="Xnip2022-04-02_22-39-21" style="zoom:30%;" />
+<img src="/Users/krzhck/Desktop/Xnip2022-04-02_22-39-21.jpg" alt="Xnip2022-04-02_22-39-21" style="zoom:25%;" />
+
+<div style="page-break-after: always;"></div>
+
+**foodSearchMaze**
+
+由于问题的 goal 设置为 (1, 1)，所以设计思路就是让 pacman 从右至左上下迂回地吃完所有食物。实现是将特定区域（图中迷宫里的黑色区域）的代价设得非常高，让 pacman 不会通过这些区域，类似于用极高的代价生成的墙壁，迫使 pacman以一个特定的迂回路线走到目标。
+
+<img src="/Users/krzhck/Desktop/1491648920359_.pic.jpg" style="zoom:25%;" />
 
 
 
 ## 问题三
+
+自己设计的迷宫见 myMaze.lay。为避免陷入原地循环加入了随机化。录屏的两个测试指令如下。
+
+```
+python pacman.py -p MinimaxAgent -l myMaze.lay -a depth=3
+python pacman.py -p AlphaBetaAgent -l myMaze.lay -a depth=3
+```
+
+不过大部分情况下吃豆人不能吃到所有食物（大概是因为怪物部分动作的随机化）。
